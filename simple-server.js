@@ -47,7 +47,7 @@ function broadcast(fromClient, message, type) {
 	var msg = JSON.stringify({
 		'typeMessage': type,
 		'fromUser': fromClient.name,
-		'withColor': (fromClient.color ? 'black' : fromClient.color),
+		'withColor': (fromClient.color ? fromClient.color : 'black'),
 		'message': message,
 		'datetime': new Date().toLocaleString()
 	});

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+
+		<!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame
+		Remove this if you use the .htaccess -->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+		<title>index</title>
+		<meta name="description" content="" />
+		<meta name="author" content="Danilo de Castro" />
+
+		<meta name="viewport" content="width=device-width; initial-scale=1.0" />
+
+		<!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
+		<link rel="shortcut icon" href="/favicon.ico" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<style>
+	        * { font-family:tahoma; font-size:12px; padding:0px; margin:0px; }
+	        p { line-height:18px; }
+	        div { width:500px; margin-left:auto; margin-right:auto;}
+	        #content { padding:5px; background:#ddd; border-radius:5px;
+	                   border:1px solid #CCC; margin-top:10px; }
+	        #input { border-radius:2px; border:1px solid #ccc;
+	                 margin-top:10px; padding:5px; width:400px; }
+	        #status { width:88px; display:block; float:left; margin-top:15px; }
+        </style>
+	</head>
+
+	<body onload="init();">
+		<div>
+			<header>
+				<h1>Node.js - Chat example</h1>
+			</header>
+			<div id="content"></div>
+	        <div>
+	            <span id="status">Connecting...</span>
+	            <input type="text" id="input" disabled="disabled" />
+	        </div>
+
+			<footer>
+				<p>
+					&copy; Copyright  by Danilo de Castro
+				</p>
+			</footer>
+		</div>
+		<!--script src="/socket.io/socket.io.js"></script -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+		<script src="node_modules/socket.io/lib/socket.io.js"></script> 
+		<script>
+			$(document).ready(function () {
+			    window.WebSocket = window.WebSocket || window.MozWebSocket;
+			    var webSocketPort = 1337;
+			    var connection = new WebSocket('ws://localhost:' + webSocketPort);
+				var input = $('#input'), status = $('#status'), content = $('#content');
+
+				function setName(jsonMessage) {
+					status.html(jsonMessage.fromUser);
+					appendMessage(jsonMessage);
+				}
+				
+				function setColor(message) {
+					status.css('color', jsonMessage.withColor == false ? 'black' : jsonMessage.withColor);
+					appendMessage(jsonMessage);
+				}
+				
+				function appendMessage(jsonMessage) {
+					var fieldUser = '<span style="color: ' + (jsonMessage.withColor == false ? 'black' : jsonMessage.withColor) + '">' + jsonMessage.fromUser + ': </span>';
+					content.append($('<div class="msg">' + fieldUser + jsonMessage.message + '</div>'));
+				}
+				
+			    connection.onopen = function () {
+			        // connection is opened and ready to use
+			       	input.removeAttr('disabled');
+					connection.send('/name ' + new Date().getTime());
+			    };
+			
+			    connection.onerror = function (error) {
+			        // an error occurred when sending/receiving data
+			        input.attr('disabled', 'disabled');
+			        status.html('Error');
+			        var json = JSON.stringify(error);
+			        console.log(json);
+			    };
+			
+			    connection.onmessage = function (message) {
+			        // try to decode json (I assume that each message from server is json)
+			        try {
+			            var json = JSON.parse(message.data);
+			            console.log(json.message);
+			            eval(json.typeMessage + '(json);')
+			        } catch (e) {
+			            console.log('This doesn\'t look like a valid JSON: ', message.data);
+			            return;
+			        }
+			        // handle incoming message
+			    };
+			    
+			    input.keypress(function(e){
+					if (e.keyCode === 13) {
+		            	var msg = $(this).val();
+		            	if (!msg) {
+		                	return;
+		            	}
+		            	connection.send(msg);
+		            	$(this).val('');
+		        	}
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -81,7 +81,8 @@ wsServer.on('request', function(request) {
     //var connection = request.accept(null, request.origin);
     // This is the most important callback for us, we'll handle
     // all messages from users here.
-    var id = Math.random() + '.' + new Date().getTime(); 
+    var id = Math.random() + '.' + new Date().getTime();
+    log(request.origin); 
     var connection = request.accept(null, request.origin);
     
     clients.push({
